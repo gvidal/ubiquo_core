@@ -70,7 +70,10 @@ module Ubiquo
 
     #Load all user overrides from backend
     def self.load_from_backend!
-      uhook_load_from_backend! rescue 0
+      uhook_load_from_backend!
+    rescue Exception => e
+      warn "Could not load settings properly, please check all settings exist on the database and types are correct."
+      0
     end
 
     # Add alias to block assignement in plugin register
