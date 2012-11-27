@@ -113,6 +113,17 @@ module Ubiquo
             else
               class_name.constantize.all
             end
+            if options[:sort].present?
+              field = options[:sort][:field]
+              sort_type = (options[:sort][:type] || :desc).to_sym
+              raise ArgumentError, "No sort field given" unless field.present?
+              raise ArgumentError, "Sort type must be asc or desc" unless [:asc, :desc].include?(sort_type)
+              if sort_type == :asc 
+                related_objects = related_objects.sort{|a,b| b.send(field) <=> a.send(field)}
+              else
+                related_objects = related_objects.sort{|a,b| a.send(field) <=> b.send(field)}
+              end
+            end
           end
         else
           options[:hide_controls] = true
