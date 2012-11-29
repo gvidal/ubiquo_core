@@ -118,10 +118,9 @@ module Ubiquo
               sort_type = (options[:sort][:type] || :desc).to_sym
               raise ArgumentError, "No sort field given" unless field.present?
               raise ArgumentError, "Sort type must be asc or desc" unless [:asc, :desc].include?(sort_type)
-              if sort_type == :asc 
-                related_objects = related_objects.sort{|a,b| b.send(field) <=> a.send(field)}
-              else
-                related_objects = related_objects.sort{|a,b| a.send(field) <=> b.send(field)}
+              related_objects = related_objects.sort do |a,b|
+                field1, field2 = (sort_type == :asc ? [b,a] : [a,b])
+                sanitized_accents(field1.send(field)) <=> sanitized_accents(field2.send(field))
               end
             end
           end
@@ -280,6 +279,24 @@ module Ubiquo
           ''
         end
       end
+
+      private
+
+      def sanitized_accents(text)
+        text_aux = text.downcase
+        regexps = { "a" =>  "(a|á|à|â|ã|A|Á|À|Â|Ã)",
+              "e" =>  "(e|é|è|ê|E|É|È|Ê)", 
+              "i" =>  "(i|í|ì|I|Í|Ì)", 
+              "o" =>  "(o|ó|ò|ô|õ|O|Ó|Ò|Ô|Õ)",
+              "u" =>  "(u|ú|ù|U|Ú|Ù)", 
+              "c" =>  "(c|ç|C|Ç)",
+              "n" =>  "(ñ|Ñ)"}
+        regexps.each do |value_to_sub, exp|
+          text_aux.gsub!(Regexp.new(exp), value_to_sub)
+        end
+        text_aux
+      end
+      
     end
   end
 end
